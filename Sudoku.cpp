@@ -1,27 +1,27 @@
-#include<iostream>
-#include<vector>
-#include<fstream>
+#include <iostream>
+#include <vector>
+#include <fstream>
 using namespace std;
 ifstream File_Input;
 ofstream File_Output;
 
-struct Sudoku_Class{  //ä¸€ä¸ªå®«æ ¼çš„å†…å®¹
-    unsigned char Data;  //æ•°å­—1~9ï¼Œ0è¡¨ç¤ºæœªå®Œæˆ
-    bool May[9];  //å‡è®¾æ•°
+struct Sudoku_Data {  //Ò»¸ö¹¬¸ñµÄÄÚÈİ
+    unsigned char Data;  //Êı×Ö1~9  0±íÊ¾Î´Íê³É
+    bool May[9];  //¼ÙÉèÊı
 };
-struct Try_Point_Class{  //å‡è®¾é“¾ä¸Šçš„èŠ‚ç‚¹
-    unsigned char Block_Num;  //è¢«å‡è®¾çš„å®«æ ¼ç¼–å·
-    unsigned char Point_Num;  //å½“å‰æ­£åœ¨è¢«å‡è®¾çš„Itemç¼–å·
-    vector <unsigned char> Item;  //èŠ‚ç‚¹ä¸­çš„æ‰€æœ‰å‡è®¾æ•°
+struct Try_Point {  //¼ÙÉèÁ´ÉÏµÄ½Úµã
+    unsigned char Block_num;  //±»¼ÙÉèµÄ¹¬¸ñ±àºÅ
+    unsigned char Point_num; //µ±Ç°ÕıÔÚ±»¼ÙÉèµÄitem±àºÅ
+    vector <unsigned char> item;  //½ÚµãÖĞµÄËùÓĞ¼ÙÉèÊı
 };
 
-struct Sudoku_Class Base[81];  //å…¨éƒ¨81ä¸ªå®«æ ¼
-struct Sudoku_Class Backup[81];  //è¿›è¡Œå‡è®¾çš„æ—¶å€™æš‚å­˜ä½¿ç”¨
-unsigned char Addr_Kind[3][9][9];  //è¡Œåˆ—å®«å¯¹åº”çš„ä½ç½®è¡¨
-unsigned char Addr_Block[81][3];  //å®«æ ¼æ‰€åœ¨è¡Œåˆ—å®«çš„ç¼–å·
-vector <struct Try_Point_Class> Try;  //å‡è®¾é“¾
-struct Try_Point_Class Empty_Point;  //ç©ºçš„å‡è®¾èŠ‚ç‚¹
-unsigned char Mode;
+struct Sudoku_Data Base[81];  //È«²¿81¸ö¹¬¸ñ
+struct Sudoku_Data Backup[81];  //½øĞĞ¼ÙÉèµÄÊ±ºòÔİ´æÊ¹ÓÃ
+unsigned char Addr_Kind[3][9][9];  //ĞĞÁĞ¹¬¶ÔÓ¦µÄÎ»ÖÃ±í
+unsigned char Addr_Block[81][3];  //¹¬¸ñËùÔÚĞĞÁĞ¹¬µÄ±àºÅ
+vector <struct Try_Point> Try;  //¼ÙÉèÁ´
+struct Try_Point Empty_Point;  //¿ÕµÄ¼ÙÉè½Úµã
+bool display;  //¾ö¶¨Solve_OutputÊ±ÊÇ·ñÊä³ö
 
 void Init();
 void Analyse();
@@ -34,282 +34,280 @@ bool Try_Next();
 void Data_Input();
 unsigned int Calculate();
 unsigned char Next_Empty_Block(unsigned char Start);
-void Init_Point(unsigned char Block_Num,unsigned char Point_Num);
+void Init_Point(unsigned char Block_num,unsigned char Point_num);
 
-int main(){
-    unsigned int Solve_Num,Dat;
+int main() {
+    unsigned int Solve_num, dat;
     Init();
-    cout<<"Welcome to Sudoku-Calculator!"<<endl;
-    Restart:;
+    cout<<"Welcome to Sudoku-Calculator by Dnomd343"<<endl<<endl;
+Reinput:;
     Data_Input();
-    cout<<endl<<"The Input Data:"<<endl;
-    Solve_Output();
-    cout<<"0.Go back and edit the data"<<endl;
-    cout<<"1.Show all solutions one by one"<<endl;
-    cout<<"2.Find the number of solutions in all cases"<<endl;
-    cout<<"3.Find all solutions and output them to file"<<endl;
-    cout<<endl<<"Select a mode and continue : ";
-    cin>>Dat;
-    if((Dat>=1)&&(Dat<=3)){Mode=Dat;}else{goto Restart;}
-    cout<<"The mode is "<<int(Mode)<<" ,Press ENTER to Start Calculate...";
-    cin.get();cin.get();
-    cout<<"Please Wait..."<<endl;
-    Solve_Num=Calculate();
-    if(Solve_Num==0){
-        cout<<"Error or No solve!!!"<<endl;
+    cout<<"The Input Data:"<<endl<<endl;
+    for (int i = 0; i < 81; i++) {
+        if (Base[i].Data == 0) {
+            cout<<"- ";
+        } else {
+            cout<<int(Base[i].Data)<<" ";
+        }
+        if (i % 3 == 2) {cout<<" ";}
+        if (i % 9 == 8) {cout<<endl;}
+        if (i % 27 == 26) {cout<<endl;}
     }
-    else{
-        cout<<"Found "<<Solve_Num<<" Solution"<<endl;
+    cout<<endl;
+    cout<<"0. Go Back and Edit the Data"<<endl;
+    cout<<"1. Just Search all the Cases"<<endl;
+    cout<<"2. Show all Solutions One by One"<<endl;
+    cout<<endl<<"Select a mode and then Continue : ";
+    cin>>dat;
+    cin.get();
+    if (dat == 1) {
+        display=false;
+    } else if (dat == 2) {
+        display=true;
+    } else {
+        goto Reinput;
+    }
+    cout<<"Please Wait..."<<endl<<endl;
+    Solve_num = Calculate();
+    if (Solve_num == 0) {
+        cout<<"Error or No solve!!!"<<endl;
+    } else {
+        cout<<"Found "<<Solve_num<<" Solution"<<endl;
     }
     cout<<"Press ENTER to Exit...";
     cin.get();
     return 0;
 }
-void Data_Input(){  //æ¥å—å‘½ä»¤è¡Œä¸‹è¾“å…¥æ•°ç‹¬å†…å®¹
-    unsigned int Num,i;
-    char Dat;
-    char Data[82];
-    cout<<"Please Input the Data:"<<endl;
-    Num=0;
-    Next:;
-    cout<<endl<<endl<<endl<<endl<<endl<<endl;
+void Data_Input() {  //ÃüÁîĞĞÄ£Ê½ÏÂÊäÈëÊı¶ÀÄÚÈİ
+    unsigned int num = 0;
+    char dat;
+Next:;
+    cout<<endl<<endl<<endl<<endl<<endl;
     cout<<"You can Input the Command and then Press the ENTER"<<endl;
     cout<<"'+' : Next Block    '-' : Last Block"<<endl;
     cout<<"'*' : Next Line     '/' : Last Line"<<endl;
     cout<<"'=' : Compete       '0' : Empty Block"<<endl;
-    cout<<"'1' to '9' : The Number"<<endl<<endl;
-    for(i=0;i<=80;i++){
-        Data[i]=Base[i].Data+48;
-    }
-    Data[81]=0;
-    for(i=0;i<=80;i++){
-        if(i==Num){
+    cout<<"'1' to '9' : The number"<<endl<<endl;
+    for (int i = 0; i < 81; i++) {
+        if (i == num) {
             cout<<"_"<<" ";
+        } else {
+            if (Base[i].Data == 48) {
+                cout<<"?"<<" ";
+            } else {
+                cout<<int(Base[i].Data)<<" ";
+            }
         }
-        else{
-            if(Data[i]=='0'){cout<<"?"<<" ";}else{cout<<Data[i]<<" ";}
-        }
-        if(i%3==2){cout<<" ";}
-        if(i%9==8){cout<<endl;}
-        if(i%27==26){cout<<endl;}
+        if (i % 3 == 2) {cout<<" ";}
+        if (i % 9 == 8) {cout<<endl;}
+        if (i % 27 == 26) {cout<<endl;}
     }
-    cin>>Dat;
-    if(Dat==43){  // â€˜+â€™
-        if(Num<=79){Num++;}
-    	goto Next;
-    }
-    else if(Dat==45){  // '-'
-        if(Num>=1){Num--;}
+    cin>>dat;
+    if (dat == 43) {  // '+'
+        if (num <= 79) {num++;}
+        goto Next;
+    } else if (dat == 45) { // '-'
+        if (num >= 1) {num--;}
+        goto Next;
+    } else if (dat == 42) { // '*'
+        if (num <= 71) {num = num + 9;}
+        goto Next;
+    } else if (dat == 47) { // '/'
+        if (num >= 9) {num = num - 9;}
+        goto Next;
+    } else if (dat == 61) {// '='
+    } else if ((dat >= 48) && (dat <= 57)) {  // 0~9
+        Base[num].Data = int(dat - 48);
+        if (num <= 79) {num++;}
+        goto Next;
+    } else {  //ÆäËû
         goto Next;
     }
-    else if(Dat==42){  // '*'
-        if(Num<=71){Num=Num+9;}
-        goto Next;
-    }
-    else if(Dat==47){  // '/'
-        if(Num>=9){Num=Num-9;}
-        goto Next;
-    }
-    else if(Dat==61){}  // '='
-    else if((Dat>=48)&&(Dat<=57)){
-        Base[Num].Data=int(Dat-48);
-        if(Num<=79){Num++;}
-        goto Next;
-    }
-    else{goto Next;}
 }
-void Solve_Output(){
-    unsigned char i;
-    char Data[82];
-    if(Mode==2){return;}
-    for(i=0;i<=80;i++){Data[i]=Base[i].Data+48;}
-    Data[81]=0;
-    if(Mode==0){
+void Solve_Output() {  //ÃüÁîĞĞÄ£Ê½ÏÂÏÔÊ¾Êı¶À´ğ°¸
+    if (display == true) {  //È·ÈÏÊÇ·ñ´¦ÓÚÊä³öÄ£Ê½
         cout<<endl;
-        for(i=0;i<=80;i++){
-            if(Data[i]==48){cout<<"-"<<" ";}else{cout<<Data[i]<<" ";}
-            if(i%3==2){cout<<" ";}
-            if(i%9==8){cout<<endl;}
-            if(i%27==26){cout<<endl;}
-        }
-    }
-    else if(Mode==1){
-        cout<<endl;
-        for(i=0;i<=80;i++){
-            cout<<Data[i]<<" ";
-            if(i%3==2){cout<<" ";}
-            if(i%9==8){cout<<endl;}
-            if(i%27==26){cout<<endl;}
+        for (int i = 0; i < 81; i++) {
+            cout<<int(Base[i].Data)<<" ";
+            if (i % 3 == 2) {cout<<" ";}
+            if (i % 9 == 8) {cout<<endl;}
+            if (i % 27 == 26) {cout<<endl;}
         }
         cout<<"Press ENTER to Show Next Solution...";
         cin.get();
         cout<<endl;
     }
-    else if(Mode==3){
-        File_Output<<Data<<endl;
-    }
+    char dat[82];
+    for (int i = 0; i < 81; i++) {dat[i] = Base[i].Data + 48;}
+    File_Output<<dat<<endl;  //½«½á¹û±£´æµ½ÎÄ¼şÖĞ
 }
-unsigned int Calculate(){  //ä¸»è®¡ç®—å‡½æ•°
+unsigned int Calculate() {  //Ö÷¼ÆËãº¯Êı
     unsigned char i;
-    int Solve_Num=0;
-    if(Mode==3){File_Output.open("Data_Output.txt");}
-    Engine();  //åˆæ­¥æ’é™¤è¿ç®—
-    if(Check_Error()==true){File_Output.close();return 0;}  //è¾“å…¥çš„æ•°ç‹¬æœ‰è¯¯
-    if(Check_Compete()==true){Solve_Output();File_Output.close();return 1;}  //è¾“å…¥çš„æ•°ç‹¬å·²å®Œæˆ
-    for(i=0;i<=80;i++){Backup[i]=Base[i];}  //å¤‡ä»½æ•°æ® å‡è®¾æ—¶æš‚å­˜
-    Create_New_Point();  //åˆ›å»ºå‡è®¾é“¾æ ¹èŠ‚ç‚¹
-    while(1){
-        for(i=0;i<=(Try.size()-1);i++){  //è£…è½½å‡è®¾é“¾
-            Base[Try[i].Block_Num].Data=Try[i].Item[Try[i].Point_Num];
+    int Solve_num = 0;
+    File_Output.open("Sudoku_Output.txt");
+    Engine();  //³õ²½ÅÅ³ıÔËËã
+    if (Check_Error() == true) {  //ÊäÈëµÄÊı¶ÀÓĞÎó
+        File_Output.close();
+        return 0;
+    }
+    if (Check_Compete() == true) {  //ÊäÈëµÄÊı¶ÀÒÑÍê³É
+        Solve_Output();
+        File_Output.close();
+        return 1;
+    }
+    for (i = 0; i < 81; i++) {Backup[i] = Base[i];}  //±¸·İÊı¾İ ¼ÙÉèÊ±Ôİ´æ
+    Create_New_Point();  //´´½¨¼ÙÉèÁ´¸ù½Úµã
+    while (1 == 1) {
+        for (i = 0; i < Try.size(); i++) {  //×°ÔØ¼ÙÉèÁ´
+            Base[Try[i].Block_num].Data = Try[i].item[Try[i].Point_num];
         }
-        Engine();  //è¿›è¡Œæ’é™¤è¿ç®—
-        if(Check_Error()==true){  //å½“å‰å‡è®¾é”™è¯¯
-            if(Try_Next()==false){break;}  //æ²¡æœ‰ä¸‹ä¸€ä¸ªå‡è®¾ï¼Œåˆ™è¯¥æ•°ç‹¬æ— è§£ï¼Œé€€å‡º
-        }
-        else{  //å½“å‰å‡è®¾å¯èƒ½æ­£ç¡®
-            if(Check_Compete()==false){  //è‹¥ä»æœªå®Œæˆï¼Œåˆ™åˆ›å»ºæ–°çš„å‡è®¾èŠ‚ç‚¹
+        Engine();  //½øĞĞÅÅ³ıÔËËã
+        if (Check_Error() == 1) {  //µ±Ç°¼ÙÉè´íÎó
+            if(Try_Next() == false) {break;}  //Ã»ÓĞÏÂÒ»¸ö¼ÙÉè£¬Ôò¸ÃÊı¶ÀÎŞ½â£¬ÍË³ö
+        } else {  //µ±Ç°¼ÙÉè¿ÉÄÜÕıÈ·
+            if (Check_Compete() == false) {  //ÈôÈÔÎ´Íê³É£¬Ôò´´½¨ĞÂµÄ¼ÙÉè½Úµã
                 Create_New_Point();
-            }
-            else{  //å·²å®Œæˆ
+            } else {  //ÈôÒÑÍê³É
                 Solve_Output();
-                Solve_Num++;  //ç­”æ¡ˆæ•°ç›®+1
-                if(Try_Next()==false){break;}  //æ²¡æœ‰ä¸‹ä¸€ä¸ªå‡è®¾ï¼Œæ±‚è§£å®Œæˆï¼Œé€€å‡º
+                Solve_num++;  //´ğ°¸ÊıÄ¿+1
+                if (Try_Next() == false) {break;}  //Ã»ÓĞÏÂÒ»¸ö¼ÙÉè£¬Çó½âÍê³É£¬ÍË³ö
             }
         }
     }
     File_Output.close();
-    return Solve_Num;
+    return Solve_num;
 }
-bool Try_Next(){  //å½“å‰å‡è®¾é”™è¯¯ï¼Œè£…è½½ä¸‹ä¸€ä¸ªå‡è®¾
+bool Try_Next() {  //µ±Ç°¼ÙÉè´íÎó£¬×°ÔØÏÂÒ»¸ö¼ÙÉè
     unsigned char i;
-    while((Try[Try.size()-1].Point_Num>=(Try[Try.size()-1].Item.size()-1))){
-        if(Try.size()==1){return false;}
+    while (Try[Try.size()-1].Point_num >= (Try[Try.size()-1].item.size()-1)) {
+        if (Try.size() == 1) {return false;}
         Try.resize(Try.size()-1);
     }
-    Try[Try.size()-1].Point_Num++;  //å‡è®¾é“¾æœ«èŠ‚ç‚¹æŒ‡å‘ä¸‹ä¸€ä¸ªItem
-    for(i=0;i<=80;i++){  //å°†å¤‡ä»½æ•°æ®é‡æ–°è£…è½½
-        Base[i]=Backup[i];
-    }
-    return true;  //æˆåŠŸ
+    Try[Try.size()-1].Point_num++;  //¼ÙÉèÁ´Ä©½ÚµãÖ¸ÏòÏÂÒ»¸öitem
+    for (i = 0; i < 81; i++) {Base[i] = Backup[i];}  //ÖØĞÂ×°ÔØ±¸·İÊı¾İ
+    return true;
 }
-void Create_New_Point(){  //åˆ›å»ºæ–°çš„å‡è®¾é“¾èŠ‚ç‚¹
+void Create_New_Point() {
     Try.push_back(Empty_Point);
-    if(Try.size()==1){  //è‹¥ä¸ºæ ¹èŠ‚ç‚¹
-        Init_Point(Next_Empty_Block(0),0);  //ä»ç¬¬ä¸€æ ¼å¼€å§‹æœç´¢æœªå®Œæˆå®«æ ¼
-    }
-    else{  //è‹¥ä¸æ˜¯æ ¹èŠ‚ç‚¹
-        Init_Point(Next_Empty_Block(Try[Try.size()-2].Block_Num+1),Try.size()-1);  //ä»ä¸Šä¸€èŠ‚ç‚¹æŒ‡å‘çš„å®«æ ¼å¼€å§‹æœç´¢æœªå®Œæˆå®«æ ¼
+    if (Try.size() == 1) {  //ÈôÎª¸ù½Úµã
+        Init_Point(Next_Empty_Block(0),0);  //´ÓµÚÒ»¸ñ¿ªÊ¼ËÑË÷Î´Íê³É¹¬¸ñ
+    } else {  //Èô²»ÊÇ¸ù½Úµã
+        Init_Point(Next_Empty_Block(Try[Try.size()-2].Block_num+1),Try.size()-1);  //´ÓÉÏÒ»½ÚµãÖ¸ÏòµÄ¹¬¸ñ¿ªÊ¼ËÑË÷Î´Íê³É¹¬¸ñ
     }
 }
-void Init_Point(unsigned char Block_Num,unsigned char Point_Num){  //åˆå§‹åŒ–å‡è®¾é“¾èŠ‚ç‚¹  Block_Num->è¢«å‡è®¾å®«æ ¼çš„ç¼–å·  Point_Num->èŠ‚ç‚¹çš„ç¼–å·
+void Init_Point(unsigned char Block_num,unsigned char Point_num) {  //³õÊ¼»¯¼ÙÉèÁ´½Úµã  Block_num->±»¼ÙÉè¹¬¸ñµÄ±àºÅ  Point_num->½ÚµãµÄ±àºÅ
     unsigned char i;
-    Try[Point_Num].Block_Num=Block_Num;
-    for(i=0;i<=8;i++){
-        if(Base[Try[Point_Num].Block_Num].May[i]==true){  //éå†ç›®æ ‡å®«æ ¼çš„æ‰€æœ‰å‡è®¾æ•°å¹¶åŠ å…¥åˆ°è¯¥èŠ‚ç‚¹çš„Itemä¸­
-            Try[Point_Num].Item.push_back(i+1);
+    Try[Point_num].Block_num = Block_num;
+    for (i = 0; i < 9; i++) {
+        if (Base[Try[Point_num].Block_num].May[i] == true) {  //±éÀúÄ¿±ê¹¬¸ñµÄËùÓĞ¼ÙÉèÊı²¢¼ÓÈëµ½¸Ã½ÚµãµÄitemÖĞ
+            Try[Point_num].item.push_back(i + 1);
         }
     }
-    Try[Point_Num].Point_Num=0;  //æŒ‡å‘Itemä¸­çš„ç¬¬ä¸€ä¸ªå‡è®¾æ•°
+    Try[Point_num].Point_num = 0;  //Ö¸ÏòitemÖĞµÄµÚÒ»¸ö¼ÙÉèÊı
 }
-unsigned char Next_Empty_Block(unsigned char Start){  //æ‰¾åˆ°ä¸‹ä¸€ä¸ªæœªç¡®å®šç­”æ¡ˆçš„å®«æ ¼å¹¶è¿”å›å…¶ç¼–å·
+unsigned char Next_Empty_Block(unsigned char Start) {  //ÕÒµ½ÏÂÒ»¸öÎ´È·¶¨´ğ°¸µÄ¹¬¸ñ²¢·µ»ØÆä±àºÅ
     unsigned char i;
-    for(i=Start;i<=80;i++){
-        if(Base[i].Data==0){return i;}
+    for (i = Start; i < 81; i++) {
+        if (Base[i].Data == 0) {return i;}
     }
-    return 0;  //æ²¡æœ‰æœªç¡®å®šå®«æ ¼
+    return 0;  //Ã»ÓĞÎ´È·¶¨¹¬¸ñ
 }
-bool Check_Error(){  //æ£€æŸ¥æ•°ç‹¬æ˜¯å¦å­˜åœ¨é”™è¯¯
-    unsigned char kind,num,add,item;
-    for(kind=0;kind<=2;kind++){  //åˆ†åˆ«æ‰«æè¡Œåˆ—å®«
-        for(num=0;num<=8;num++){
-            for(item=1;item<=9;item++){
-                add=0;
-                for(unsigned char k=0;k<=8;k++){
-                    if(Base[Addr_Kind[kind][num][k]].Data==item){add++;}
+bool Check_Error() {  //¼ì²éÊı¶ÀÊÇ·ñ´æÔÚ´íÎó
+    unsigned char kind, num, add, item;
+    for (kind = 0; kind < 3; kind++) {  //·Ö±ğÉ¨ÃèĞĞÁĞ¹¬
+        for (num = 0; num < 9; num++) {
+            for (item = 1; item <= 9; item++) {
+                add = 0;
+                for (unsigned char k = 0; k < 9; k++) {
+                    if (Base[Addr_Kind[kind][num][k]].Data == item) {add++;}
                 }
-                if(add>=2){return true;}  //è‹¥ä¸€ç»„è¡Œåˆ—å®«ä¸­å­˜åœ¨ä¸¤ä¸ªç›¸åŒçš„æ•° -> é”™è¯¯é€€å‡º
+                if (add >= 2) {return true;}  //ÈôÒ»×éĞĞÁĞ¹¬ÖĞ´æÔÚÁ½¸öÏàÍ¬µÄÊı -> ´íÎóÍË³ö
             }
         }
     }
-    for(num=0;num<=80;num++){  //æ‰«æå…¨éƒ¨å®«æ ¼
-        if(Base[num].Data==0){  //è‹¥æœªå®Œæˆ
-            add=0;
-            for(unsigned char k=0;k<=8;k++){  //éå†å…¶æ‰€æœ‰å‡è®¾æ•°
-                if(Base[num].May[k]==true){add++;}
+    for (num = 0; num < 81; num++) {  //É¨ÃèÈ«²¿¹¬¸ñ
+        if (Base[num].Data == 0) {  //ÈôÎ´Íê³É
+            add = 0;
+            for (unsigned char k = 0; k < 9; k++) {  //±éÀúÆäËùÓĞ¼ÙÉèÊı
+                if (Base[num].May[k] == true) {add++;}
             }
-            if(add==0){return true;}  //æ²¡æœ‰å¯èƒ½çš„æ•° -> é”™è¯¯é€€å‡º
+            if (add == 0) {return true;}  //Ã»ÓĞ¿ÉÄÜµÄÊı -> ´íÎóÍË³ö
         }
     }
-    return false;  //æš‚æ—¶æœªå‘ç°é”™è¯¯
+    return false;  //ÔİÊ±Î´·¢ÏÖ´íÎó
 }
-bool Check_Compete(){  //åˆ¤æ–­æ•°ç‹¬æ˜¯å¦å®Œæˆ
+bool Check_Compete() {  //ÅĞ¶ÏÊı¶ÀÊÇ·ñÍê³É
     unsigned char i;
-    for(i=0;i<=80;i++){
-        if(Base[i].Data==0){return false;}
+    for (i = 0; i < 81; i++) {
+        if (Base[i].Data == 0) {return false;}
     }
     return true;
 }
-void Engine(){  //ä½¿ç”¨æ’é™¤æ³•
-    unsigned char kind,num,item,add,dat;
+void Engine() {  //Ê¹ÓÃÅÅ³ı·¨ÏûÈ¥²»¿ÉÄÜµÄÊı
+    unsigned char kind, num, item, add, dat;
     bool Could_Solve;
-    Again:;
-    Analyse();  //æ¯æ¬¡æ’é™¤å‰åº”å…ˆæ¶ˆå»å‡è®¾æ•°
-    Could_Solve=false;
-    for(kind=0;kind<=2;kind++){  //åˆ†åˆ«æ‰«æè¡Œåˆ—å®«
-        for(num=0;num<=8;num++){
-            for(item=0;item<=8;item++){
-                add=0;
-                for(unsigned char k=0;k<=8;k++){
-                    if((Base[Addr_Kind[kind][num][k]].Data==0)&&(Base[Addr_Kind[kind][num][k]].May[item]==true)){add++;dat=k;}  //è®°å½•ä¸€ç»„è¡Œåˆ—å®«ä¸­çš„å¯èƒ½æ•°
+Again:;
+    Analyse();  //Ã¿´ÎÅÅ³ıÇ°Ó¦ÏÈÏûÈ¥¼ÙÉèÊı
+    Could_Solve = false;
+    for (kind = 0; kind < 3; kind++) {  //·Ö±ğÉ¨ÃèĞĞÁĞ¹¬
+        for (num = 0; num < 9; num++) {
+            for (item = 0; item < 9; item++) {
+                add = 0;
+                for(unsigned char k = 0; k < 9; k++) {  //¼ÇÂ¼Ò»×éĞĞÁĞ¹¬ÖĞµÄ¿ÉÄÜÊı
+                    if ((Base[Addr_Kind[kind][num][k]].Data == 0) && (Base[Addr_Kind[kind][num][k]].May[item] == true)) {
+                        add++;
+                        dat = k;
+                    }
                 }
-                if(add==1){Base[Addr_Kind[kind][num][dat]].Data=item+1;Could_Solve=true;}  //è‹¥ä»…æœ‰å”¯ä¸€å¯èƒ½æ•°ï¼Œåˆ™è¯¥å®«æ ¼ç­”æ¡ˆç¡®å®š
+                if (add == 1) {  //Èô½öÓĞÎ¨Ò»¿ÉÄÜÊı£¬Ôò¸Ã¹¬¸ñ´ğ°¸È·¶¨
+                    Base[Addr_Kind[kind][num][dat]].Data = item + 1;
+                    Could_Solve = true;
+                }
             }
         }
-        if(Could_Solve==true){goto Again;}  //ä¸€ç›´å¾ªç¯ç›´åˆ°æ²¡æœ‰æ’é™¤å¯¹è±¡
+        if (Could_Solve == true) {goto Again;}  //Ò»Ö±Ñ­»·Ö±µ½Ã»ÓĞÅÅ³ı¶ÔÏó
     }
 }
-void Analyse(){  //æ¶ˆå»å‡è®¾æ•°
-    unsigned char num,kind,item;
-    for(num=0;num<=80;num++){  //éå†æ‰€æœ‰å®«æ ¼
-        if(Base[num].Data!=0){  //è‹¥è¯¥å®«æ ¼å·²å®Œæˆ
-            for(kind=0;kind<=2;kind++){  //åˆ†åˆ«å¯¹è¡Œåˆ—å®«æ“ä½œ
-                for(item=0;item<=8;item++){
-                    Base[Addr_Kind[kind][Addr_Block[num][kind]][item]].May[Base[num].Data-1]=false;  //æ¶ˆå»åŒè¡ŒåŒåˆ—åŒå®«çš„å‡è®¾æ•°
+void Analyse() {  //ÏûÈ¥¼ÙÉèÊı
+    unsigned char num, kind, item;
+    for (num = 0; num < 81; num++) {  //±éÀúËùÓĞ¹¬¸ñ
+        if (Base[num].Data != 0) {  //Èô¸Ã¹¬¸ñÒÑÍê³É
+            for (kind = 0; kind < 3; kind++) {  //·Ö±ğÉ¨ÃèĞĞÁĞ¹¬
+                for (item = 0; item < 9; item++) {
+                    Base[Addr_Kind[kind][Addr_Block[num][kind]][item]].May[Base[num].Data - 1] = false;  //ÏûÈ¥Í¬ĞĞÍ¬ÁĞÍ¬¹¬µÄ¼ÙÉèÊı
                 }
             }
         }
     }
 }
-void Init(){  //åˆå§‹åŒ–å®¹å™¨
-    unsigned char i,j,x,y;
-    for(i=0;i<=8;i++){  //åˆå§‹åŒ–è¡Œä¸åˆ—çš„ä½ç½®è¡¨
-        for(j=0;j<=8;j++){
-            Addr_Kind[0][i][j]=i*9+j;
-            Addr_Kind[1][i][j]=j*9+i;
+void Init() {  //³õÊ¼»¯ÈİÆ÷
+    unsigned char i, j, x, y;
+    for (i = 0; i < 9; i++) {  //³õÊ¼»¯ĞĞÓëÁĞµÄÎ»ÖÃ±í
+        for (j = 0; j < 9; j++) {
+            Addr_Kind[0][i][j] = i * 9 + j;
+            Addr_Kind[1][i][j] = j * 9 + i;
         }
     }
-    for(x=0;x<=2;x++){  //åˆå§‹åŒ–ä¹å®«æ ¼çš„ä½ç½®è¡¨
-        for(y=0;y<=2;y++){
-            for(i=0;i<=2;i++){
-                for(j=0;j<=2;j++){
-                    Addr_Kind[2][y*3+x][j*3+i]=(y*3+j)*9+(x*3+i);
+    for (x = 0; x < 3; x++) {  //³õÊ¼»¯¾Å¹¬¸ñµÄÎ»ÖÃ±í
+        for (y = 0; y < 3; y++) {
+            for (i = 0; i < 3; i++) {
+                for (j = 0; j < 3; j++) {
+                    Addr_Kind[2][y*3 + x][j*3 + i] = (y*3 + j) * 9 + (x*3 + i);
                 }
             }
         }
     }
-    for(i=0;i<=2;i++){  //åˆå§‹åŒ–å®«æ ¼æ‰€åœ¨è¡Œåˆ—å®«çš„ç¼–å·
-        for(x=0;x<=8;x++){
-            for(y=0;y<=8;y++){
-                Addr_Block[Addr_Kind[i][x][y]][i]=x;
+    for (i = 0; i < 3; i++) {  //³õÊ¼»¯¹¬¸ñËùÔÚĞĞÁĞ¹¬µÄ±àºÅ
+        for (x = 0; x < 9; x++) {
+            for (y = 0; y < 9; y++) {
+                Addr_Block[Addr_Kind[i][x][y]][i] = x;
             }
         }
     }
-    for(i=0;i<=80;i++){  //æ¸…ç©ºæ‰€æœ‰å‡è®¾æ•°
-        for(j=0;j<=8;j++){
-            Base[i].May[j]=true;
+    for (i = 0; i < 81; i++) {  //Çå¿ÕËùÓĞ¼ÙÉèÊı
+        for (j = 0; j < 9; j++) {
+            Base[i].May[j] = true;
         }
     }
-    for(i=0;i<=80;i++){  //æ¸…ç©ºæ‰€æœ‰æ•°å­—
-        Base[i].Data=0;
-    }
+    for (i = 0; i < 81; i++) {Base[i].Data = 0;}  //Çå¿ÕËùÓĞÊı×Ö
 }
